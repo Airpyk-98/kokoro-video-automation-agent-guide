@@ -78,6 +78,7 @@ To write script CSV files matching the required format:
 To prevent exposing credentials:
 1. Ensure `tokens.txt` is added to `kaggle-trigger-app/.gitignore`.
 2. Ensure `tokens.txt` is added to the `ignore_patterns` list in `kaggle-trigger-app/upload.py`.
+3. **MANDATORY Hugging Face Access Token Rule:** The AI agent MUST NOT write or hardcode the user's Hugging Face Access Token (`hf_...`) directly inside the Jupyter notebook cells (`kokoro-tts-automation.ipynb`). The `HF_TOKEN_OVERRIDE` variable inside the base notebook must always remain empty (`""`). The AI agent must only pass this token dynamically during runtime parameters, keeping it safe from commits.
 
 ### Step 7: Push and Deploy
 *   **Backend (Hugging Face Spaces):** Run `python upload.py` from the `kaggle-trigger-app/` folder to upload the code to the Hugging Face Space.
