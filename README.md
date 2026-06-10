@@ -19,9 +19,15 @@ The project consists of 4 main components:
 ## 🤖 Instructions for the AI Agent
 
 > [!IMPORTANT]
-> **AI Agent Action Plan:** Read and execute the following steps to rebuild and link this project on the user's workspace.
+> **AI Agent Action Plan:** Read and execute the following phases to rebuild, customize, and deploy this project.
 
-### Step 1: Clone the Project Codebase
+### Phase 0: Interview the User
+Before writing any code or deploying, present a quick greeting and prompt the user to specify:
+1.  **Custom App Name:** What would they like to name the video control center? (e.g., "CrimeWave Studio", "Sagas Video Automation").
+2.  **UI Theme / Color Palette:** What is their preferred color scheme? (e.g., Glassmorphic dark obsidian, cyberpunk neon green, royal gold & dark blue gradient, etc.).
+3.  **Missing Credentials:** Ask the user to provide any API tokens (Kaggle username/key, Hugging Face write token, Vercel CLI token, GitHub token) that aren't already available in the local environment.
+
+### Phase 1: Clone the Project Codebase
 The entire codebase is structured as a monorepo. Clone it to the local workspace:
 ```bash
 git clone https://github.com/Airpyk-98/truecrimescripts.git
@@ -31,7 +37,12 @@ The repository contains:
 *   `kaggle-trigger-app/public/` - The Vercel frontend dashboard.
 *   `kaggle-trigger-app/kokoro-tts-automation.ipynb` - The Kaggle T4 GPU notebook.
 
-### Step 2: Configure Local Credentials
+### Phase 2: Customize branding & UI Themes
+Based on the user's Phase 0 inputs, customize the frontend before deploying:
+1.  **Brand Customization:** Open `kaggle-trigger-app/public/index.html` and replace all occurrences of `Kokoro Video Automation` and header logos with the user's custom App Name.
+2.  **CSS Variable Color Styling:** Open `kaggle-trigger-app/public/style.css` and modify the primary HSL/HEX root CSS color variables (e.g., `--primary`, `--primary-glow`, `--accent`, gradients) to match the user's chosen UI Theme. Make it look sleek, premium, and glassmorphic.
+
+### Phase 3: Configure Local Credentials
 Create a file named `tokens.txt` inside the `kaggle-trigger-app/` directory and populate it with the user's secret keys:
 ```text
 ========================================================================
@@ -55,37 +66,37 @@ Vercel Project ID: <USER_VERCEL_PROJECT_ID>
 ========================================================================
 ```
 
-### Step 3: Set Up the Script Generator Skill
+### Phase 4: Import the Script Generator Skill
 To write script CSV files matching the required format:
-1. Locate the `truecrimescript` skill instructions (usually saved as `C:\Users\DELL\.gemini\config\skills\truecrimescript\SKILL.md` or locally in this repo as `truecrimescript.md`).
-2. Verify that your system prompts incorporate the `truecrimescript` skill format, column headers (`Serial number, image prompt, video prompt, voice over prompt`), and Ray William Johnson's narrative voice.
-3. Trigger script generation by asking for a case (e.g. *"generate a true crime script for [Crime Case] in CSV format"*).
+1.  Link to and load the dedicated skill instructions from the separate repository:
+    > **Skill GitHub Repository:** [https://github.com/Airpyk-98/truecrimescript-skill.git](https://github.com/Airpyk-98/truecrimescript-skill.git)
+2.  Verify that your prompts incorporate the `truecrimescript` skill format, column headers (`Serial number, image prompt, video prompt, voice over prompt`), and Ray William Johnson's narrative voice.
 
-### Step 4: Link the Frontend to the Backend
-1. Open `kaggle-trigger-app/public/app.js`.
-2. Locate the default backend configuration URL or input box.
-3. Link the frontend to point to the backend's direct URL (e.g., `https://<hf-username>-truecrime-video-generator.hf.space` or `http://localhost:7860` for local dev).
+### Phase 5: Link the Frontend to the Backend
+1.  Open `kaggle-trigger-app/public/app.js`.
+2.  Locate the default backend configuration URL or input box.
+3.  Link the frontend to point to the backend's direct URL (e.g., `https://<hf-username>-truecrime-video-generator.hf.space` or `http://localhost:7860` for local dev).
 
-### Step 5: Link the Backend to Kaggle GPU
-1. In `kaggle-trigger-app/server.js`, confirm the paths point to the local base notebook (`kokoro-tts-automation.ipynb`).
-2. The backend server uses the Kaggle API CLI. Confirm the server automatically writes credentials into the `KAGGLE_CONFIG_DIR` during executions, keeping credentials containerized.
-3. The server uses the `NvidiaTeslaT4` accelerator flag when pushing the notebook:
-   ```bash
-   kaggle kernels push -p "./temp_job_id" --accelerator NvidiaTeslaT4
-   ```
+### Phase 6: Link the Backend to Kaggle GPU
+1.  In `kaggle-trigger-app/server.js`, confirm the paths point to the local base notebook (`kokoro-tts-automation.ipynb`).
+2.  The backend server uses the Kaggle API CLI. Confirm the server automatically writes credentials into the `KAGGLE_CONFIG_DIR` during executions, keeping credentials containerized.
+3.  The server uses the `NvidiaTeslaT4` accelerator flag when pushing the notebook:
+    ```bash
+    kaggle kernels push -p "./temp_job_id" --accelerator NvidiaTeslaT4
+    ```
 
 ### Step 6: Exclude Secrets from Tracking
 To prevent exposing credentials:
-1. Ensure `tokens.txt` is added to `kaggle-trigger-app/.gitignore`.
-2. Ensure `tokens.txt` is added to the `ignore_patterns` list in `kaggle-trigger-app/upload.py`.
-3. **MANDATORY Hugging Face Access Token Rule:** The AI agent MUST NOT write or hardcode the user's Hugging Face Access Token (`hf_...`) directly inside the Jupyter notebook cells (`kokoro-tts-automation.ipynb`). The `HF_TOKEN_OVERRIDE` variable inside the base notebook must always remain empty (`""`). The AI agent must only pass this token dynamically during runtime parameters, keeping it safe from commits.
+1.  Ensure `tokens.txt` is added to `kaggle-trigger-app/.gitignore`.
+2.  Ensure `tokens.txt` is added to the `ignore_patterns` list in `kaggle-trigger-app/upload.py`.
+3.  **MANDATORY Hugging Face Access Token Rule:** The AI agent MUST NOT write or hardcode the user's Hugging Face Access Token (`hf_...`) directly inside the Jupyter notebook cells (`kokoro-tts-automation.ipynb`). The `HF_TOKEN_OVERRIDE` variable inside the base notebook must always remain empty (`""`). The AI agent must only pass this token dynamically during runtime parameters, keeping it safe from commits.
 
-### Step 7: Push and Deploy
+### Phase 7: Push and Deploy
 *   **Backend (Hugging Face Spaces):** Run `python upload.py` from the `kaggle-trigger-app/` folder to upload the code to the Hugging Face Space.
 *   **Frontend (Vercel):** Set up Vercel CLI and push using:
-   ```bash
-   vercel --prod --token <VERCEL_TOKEN> --scope <TEAM_SCOPE>
-   ```
+    ```bash
+    vercel --prod --token <VERCEL_TOKEN> --scope <TEAM_SCOPE>
+    ```
 
 ---
 
@@ -123,4 +134,4 @@ Here is where to find the tokens and keys required to populate your `tokens.txt`
 *   **Project Monorepo:** [https://github.com/Airpyk-98/truecrimescripts.git](https://github.com/Airpyk-98/truecrimescripts.git)
 *   **Active Frontend (Vercel):** [https://public-wine-three-41.vercel.app](https://public-wine-three-41.vercel.app)
 *   **Active Backend (Hugging Face Space):** [https://huggingface.co/spaces/Airpyk98/truecrime-video-generator](https://huggingface.co/spaces/Airpyk98/truecrime-video-generator)
-*   **True Crime Skill Instruction Set:** [truecrimescript.md](file:///C:/Users/DELL/Documents/antigravity/epic-nobel/truecrimescript.md)
+*   **Dedicated True Crime Skill Repository:** [https://github.com/Airpyk-98/truecrimescript-skill.git](https://github.com/Airpyk-98/truecrimescript-skill.git)
