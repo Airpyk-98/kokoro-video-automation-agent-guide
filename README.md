@@ -92,11 +92,17 @@ To prevent exposing credentials:
 3.  **MANDATORY Hugging Face Access Token Rule:** The AI agent MUST NOT write or hardcode the user's Hugging Face Access Token (`hf_...`) directly inside the Jupyter notebook cells (`kokoro-tts-automation.ipynb`). The `HF_TOKEN_OVERRIDE` variable inside the base notebook must always remain empty (`""`). The AI agent must only pass this token dynamically during runtime parameters, keeping it safe from commits.
 
 ### Phase 7: Push and Deploy
-*   **Backend (Hugging Face Spaces):** Run `python upload.py` from the `kaggle-trigger-app/` folder to upload the code to the Hugging Face Space.
-*   **Frontend (Vercel):** Set up Vercel CLI and push using:
-    ```bash
-    vercel --prod --token <VERCEL_TOKEN> --scope <TEAM_SCOPE>
-    ```
+1.  **Backend (Hugging Face Spaces):** Run `python upload.py` from the `kaggle-trigger-app/` folder to upload the code to the Hugging Face Space.
+2.  **Vercel Project Setup:** 
+    *   **Delete Old Settings:** Delete the `.vercel/` folder from the cloned repository. This prevents the agent from attempting to deploy to the original seller's project ID.
+    *   **Link New Project:** From the `kaggle-trigger-app/` directory, run the Vercel login and link commands:
+        ```bash
+        vercel link --token <VERCEL_TOKEN> --scope <TEAM_SCOPE> --yes
+        ```
+    *   **Deploy Production Build:** Deploy the customized frontend to the buyer's own Vercel account:
+        ```bash
+        vercel --prod --token <VERCEL_TOKEN> --scope <TEAM_SCOPE> --yes
+        ```
 
 ---
 
